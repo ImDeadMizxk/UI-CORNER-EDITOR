@@ -1,0 +1,494 @@
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI CORNER EDITOR</title>
+  <link rel="icon" href="https://media.tenor.com/ldNjzyrqeIMAAAAe/gato-meme.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #121212 0%, #2c2c2c 100%);
+            color: white;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-top: 65px;
+            font-size: 45px;
+            word-wrap: break-word;
+        }
+
+        #container {
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #imageCanvas {
+            border: 1px solid #ccc;
+            margin-top: 7px;
+            cursor: grab;
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+        }
+
+        input[type="file"] {
+            margin-top: 3px;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        input[type="file"]:hover {
+            background-color: #444;
+        }
+
+        #sliderLabel {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #666;
+        }
+
+        #downloadBtn {
+            display: none;
+            margin-top: 15px;
+        }
+
+        #formatSelect {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+        }
+
+    button#centerBtn {
+        display: block;
+        margin: 5px auto;  /* Centra el botón horizontalmente */
+    }
+
+        #credits {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        #bgColorSelector {
+            margin-top: 20px;
+        }
+
+        #transparentBgLabel {
+            margin-top: 10px;
+        }
+
+        /* Media Queries para pantallas más pequeñas */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 30px;
+            }
+
+            input[type="file"],
+            button,
+            #formatSelect {
+                width: 100%;
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            #sliderLabel,
+            #bgColorSelector,
+            #transparentBgLabel {
+                font-size: 14px;
+            }
+
+            #imageCanvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        /* Media Queries para dispositivos muy pequeños */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            #sliderLabel,
+            #bgColorSelector,
+            #transparentBgLabel,
+            #credits {
+                font-size: 12px;
+            }
+
+            input[type="file"],
+            button,
+            #formatSelect {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            #downloadBtn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>IMAGE CORNER CONVERTER</h1>
+
+    <!-- Formulario para subir la imagen -->
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <!-- Contenedor para el Canvas -->
+    <div id="container">
+        <canvas id="imageCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <!-- Slider para ajustar el corner -->
+    <div id="sliderLabel">
+        <label for="cornerSlider">Radio del corner: </label>
+        <input type="range" id="cornerSlider" min="0" max="100" value="0">
+        <span id="cornerValue">0</span>
+    </div>
+
+    <!-- Selector de color de fondo con paleta interactiva -->
+    <div id="bgColorSelector">
+        <label for="bgColor">Selecciona el color de fondo: </label>
+        <input type="color" id="bgColor" value="#000000"> <!-- Paleta de color -->
+    </div>
+
+    <!-- Opción para hacer el fondo transparente -->
+    <div id="transparentBgLabel">
+        <label for="transparentBg">Hacer el fondo transparente: </label>
+        <input type="checkbox" id="transparentBg" checked> <!-- Hacerlo transparente por defecto -->
+    </div>
+
+    <!-- Selector de formato -->
+    <div>
+        <label for="formatSelect">Selecciona el formato de descarga: </label>
+        <select id="formatSelect">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/webp">WEBP</option>
+            <option value="image/tiff">TIFF</option>
+            <option value="image/gif">GIF</option>
+        </select>
+    </div>
+
+    <!-- Botón para descargar la imagen -->
+    <button id="downloadBtn">Descargar Imagen</button>
+
+<!-- Botón para centrar la imagen -->
+    <button id="centerBtn">Centrar Imagen</button>
+
+
+    <!-- Texto de créditos debajo del botón -->
+    <div id="credits">Made By SilentExe</div>
+
+    <script>
+        const imageUpload = document.getElementById("imageUpload");
+        const imageCanvas = document.getElementById("imageCanvas");
+        const ctx = imageCanvas.getContext("2d");
+        const cornerSlider = document.getElementById("cornerSlider");
+        const cornerValue = document.getElementById("cornerValue");
+        const downloadBtn = document.getElementById("downloadBtn");
+        const formatSelect = document.getElementById("formatSelect");
+        const bgColorSelector = document.getElementById("bgColor");
+        const transparentBgCheckbox = document.getElementById("transparentBg");
+
+        let image = new Image();
+        let imgLoaded = false;
+        let originalImageWidth, originalImageHeight;
+        let scale = 1;
+        let offsetX = 0, offsetY = 0;
+        let isDragging = false;
+        let dragStartX, dragStartY;
+        let initialDistance = null;
+        let backgroundColor = "#000000"; // Valor por defecto
+
+        // Cargar la imagen predeterminada al iniciar
+        image.src = 'https://i.pinimg.com/736x/a2/b9/53/a2b9533954fbb0475082a630c8b428f1.jpg';
+        image.onload = function() {
+            imgLoaded = true;
+            originalImageWidth = image.width;
+            originalImageHeight = image.height;
+            drawImage();
+        };
+
+// Función para cargar la imagen cuando el usuario sube una nueva
+imageUpload.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            image.src = event.target.result;
+            image.onload = function() {
+                imgLoaded = true;
+                originalImageWidth = image.width;
+                originalImageHeight = image.height;
+                // Reiniciar la posición y escala
+                offsetX = 0;
+                offsetY = 0;
+                scale = 1;
+
+                // Restablecer el corner slider
+                cornerSlider.value = 0;
+                cornerValue.textContent = "0";
+
+                // Restablecer color de fondo y transparencia
+                bgColorSelector.value = "#000000"; // Restablecer color a negro
+                transparentBgCheckbox.checked = true; // Volver a activar fondo transparente
+
+                // Volver a renderizar la imagen sin bordes redondeados
+                drawImage();
+
+                downloadBtn.style.display = "inline-block";
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+const centerBtn = document.getElementById("centerBtn");
+
+// Función para centrar la imagen en el lienzo
+centerBtn.addEventListener("click", () => {
+    offsetX = 0;
+    offsetY = 0;
+    scale = 1;  // Ajustar el zoom a 1 para que la imagen vuelva a su tamaño original
+    drawImage(); // Redibujar la imagen con la nueva posición centrada
+});
+
+
+        // Función para actualizar el color de fondo
+        bgColorSelector.addEventListener("input", (e) => {
+            if (!transparentBgCheckbox.checked) {
+                backgroundColor = e.target.value;
+                drawImage(); // Redibujar con el nuevo color de fondo
+            }
+        });
+
+
+        // Función para dibujar la imagen, teniendo en cuenta la transparencia
+        function drawImage() {
+            if (!imgLoaded) return;
+
+            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+            // Si el fondo es transparente, no dibujar color de fondo
+            if (!transparentBgCheckbox.checked) {
+                ctx.fillStyle = backgroundColor;
+                ctx.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
+            }
+
+            const cornerRadius = (cornerSlider.value / 100) * Math.min(imageCanvas.width, imageCanvas.height) / 2;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(cornerRadius, 0);
+            ctx.arcTo(imageCanvas.width, 0, imageCanvas.width, imageCanvas.height, cornerRadius);
+            ctx.arcTo(imageCanvas.width, imageCanvas.height, 0, imageCanvas.height, cornerRadius);
+            ctx.arcTo(0, imageCanvas.height, 0, 0, cornerRadius);
+            ctx.arcTo(0, 0, imageCanvas.width, 0, cornerRadius);
+            ctx.closePath();
+            ctx.clip();
+
+            // Mantener la imagen sin estirar
+            const imgAspect = image.width / image.height;
+            const canvasAspect = imageCanvas.width / imageCanvas.height;
+
+            let drawWidth, drawHeight;
+
+            if (imgAspect > canvasAspect) {
+                drawWidth = imageCanvas.width;
+                drawHeight = drawWidth / imgAspect;
+            } else {
+                drawHeight = imageCanvas.height;
+                drawWidth = drawHeight * imgAspect;
+            }
+
+            const posX = (imageCanvas.width - drawWidth) / 2;
+            const posY = (imageCanvas.height - drawHeight) / 2;
+
+            ctx.drawImage(image, posX + offsetX, posY + offsetY, drawWidth * scale, drawHeight * scale);
+            ctx.restore();
+        }
+
+        // Detectar cuando se cambia el estado de transparencia
+        transparentBgCheckbox.addEventListener("change", () => {
+            drawImage(); // Redibujar la imagen con el nuevo estado de transparencia
+        });
+
+        cornerSlider.addEventListener("input", () => {
+            cornerValue.textContent = cornerSlider.value;
+            drawImage();
+        });
+
+        // Zoom en la imagen con la rueda del mouse
+        imageCanvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            if (e.deltaY < 0) {
+                scale += zoomSpeed;
+            } else {
+                scale = Math.max(0.1, scale - zoomSpeed);
+            }
+            drawImage();
+        });
+
+        // Mover la imagen con el mouse
+        imageCanvas.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            dragStartX = e.offsetX - offsetX;
+            dragStartY = e.offsetY - offsetY;
+            imageCanvas.style.cursor = "grabbing";
+        });
+
+        imageCanvas.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+                offsetX = e.offsetX - dragStartX;
+                offsetY = e.offsetY - dragStartY;
+                drawImage();
+            }
+        });
+
+        imageCanvas.addEventListener("mouseup", () => {
+            isDragging = false;
+            imageCanvas.style.cursor = "grab";
+        });
+
+        imageCanvas.addEventListener("mouseleave", () => {
+            isDragging = false;
+            imageCanvas.style.cursor = "grab";
+        });
+
+        // Soporte para gestos táctiles
+        imageCanvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();  // Prevenir desplazamiento mientras se interactúa
+            if (e.touches.length === 1) {
+                isDragging = true;
+                dragStartX = e.touches[0].clientX - offsetX;
+                dragStartY = e.touches[0].clientY - offsetY;
+            } else if (e.touches.length === 2) {
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        });
+
+        imageCanvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();  // Prevenir desplazamiento mientras se interactúa
+            if (e.touches.length === 1 && isDragging) {
+                offsetX = e.touches[0].clientX - dragStartX;
+                offsetY = e.touches[0].clientY - dragStartY;
+                drawImage();
+            } else if (e.touches.length === 2 && initialDistance) {
+                const newDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                scale *= newDistance / initialDistance;
+                initialDistance = newDistance;
+                drawImage();
+            }
+        });
+
+        imageCanvas.addEventListener("touchend", (e) => {
+            if (e.touches.length < 2) {
+                initialDistance = null;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
+        });
+
+downloadBtn.addEventListener("click", () => {
+    // Recalcular el cornerRadius en función del tamaño del canvas de descarga (2048x2048)
+    const downloadCanvas = document.createElement("canvas");
+    const downloadCtx = downloadCanvas.getContext("2d");
+
+    // Configurar el canvas de descarga a 2048x2048
+    downloadCanvas.width = 2048;
+    downloadCanvas.height = 2048;
+
+    // Si la opción de fondo transparente está seleccionada, no dibujar el fondo
+    if (!transparentBgCheckbox.checked) {
+        // Establecer el color de fondo en el canvas de descarga si no es transparente
+        downloadCtx.fillStyle = backgroundColor; // Usar el color de fondo seleccionado
+        downloadCtx.fillRect(0, 0, downloadCanvas.width, downloadCanvas.height);
+    }
+
+    // Recalcular el cornerRadius basándose en el nuevo tamaño
+    const cornerRadius = (cornerSlider.value / 100) * Math.min(downloadCanvas.width, downloadCanvas.height) / 2;
+
+    downloadCtx.beginPath();
+    downloadCtx.moveTo(cornerRadius, 0);
+    downloadCtx.arcTo(downloadCanvas.width, 0, downloadCanvas.width, downloadCanvas.height, cornerRadius);
+    downloadCtx.arcTo(downloadCanvas.width, downloadCanvas.height, 0, downloadCanvas.height, cornerRadius);
+    downloadCtx.arcTo(0, downloadCanvas.height, 0, 0, cornerRadius);
+    downloadCtx.arcTo(0, 0, downloadCanvas.width, 0, cornerRadius);
+    downloadCtx.closePath();
+    downloadCtx.clip();
+
+    // Ajustar la imagen para que se mantenga en proporción
+    const imgAspect = image.width / image.height;
+    const canvasAspect = imageCanvas.width / imageCanvas.height;
+
+    let drawWidth, drawHeight;
+
+    if (imgAspect > canvasAspect) {
+        // Imagen más ancha que el canvas
+        drawWidth = imageCanvas.width;
+        drawHeight = drawWidth / imgAspect;
+    } else {
+        // Imagen más alta que el canvas
+        drawHeight = imageCanvas.height;
+        drawWidth = drawHeight * imgAspect;
+    }
+
+    // Centramos la imagen en el canvas de descarga, teniendo en cuenta el desplazamiento y el zoom
+    const posX = (imageCanvas.width - drawWidth) / 2;
+    const posY = (imageCanvas.height - drawHeight) / 2;
+
+    // Escalar para el canvas de descarga (2048x2048)
+    const downloadScaleX = downloadCanvas.width / imageCanvas.width;
+    const downloadScaleY = downloadCanvas.height / imageCanvas.height;
+
+    // Dibujar la imagen en el canvas de descarga
+    downloadCtx.drawImage(image, (posX + offsetX) * downloadScaleX, (posY + offsetY) * downloadScaleY, drawWidth * scale * downloadScaleX, drawHeight * scale * downloadScaleY);
+
+    // Generar la URL de descarga
+    const dataURL = downloadCanvas.toDataURL(formatSelect.value);
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = "image_cornered";
+    link.click();
+});
+
+    </script>
+
+</body>
+</html>
