@@ -39,30 +39,31 @@
             } 
         }
 
-        /* --- CORRECCIÓN CLAVE: Layout principal con Grid para centrado robusto --- */
+        /* --- AJUSTE CLAVE: Layout principal para posicionar más arriba --- */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-primary);
             margin: 0;
-            padding: 1rem;
+            padding: 3rem 1rem 1rem; /* Aumentado el padding superior para bajarlo del borde */
             min-height: 100vh;
             display: grid;
-            place-content: center; /* Centra el contenido vertical y horizontalmente */
+            align-content: start; /* Alinea el contenido en la parte superior */
+            justify-content: center; /* Mantiene el centrado horizontal */
             gap: 1.5rem; /* Espacio entre el container y el footer */
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* --- CONTENEDOR PRINCIPAL CON GRID --- */
+        /* --- AJUSTE CLAVE: Contenedor más pequeño --- */
         .container {
             background-color: var(--bg-light);
-            padding: 1.5rem;
-            border-radius: 24px;
+            padding: 1.25rem; /* Ligeramente reducido */
+            border-radius: 22px; /* Ligeramente reducido */
             border: 1px solid var(--border-color);
             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
             width: 100%;
-            max-width: 380px;
+            max-width: 360px; /* Reducido para ser más compacto */
             display: grid;
             grid-template-rows: auto 1fr auto; /* Header, Canvas, Footer */
             gap: 1.25rem;
