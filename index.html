@@ -4,85 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corner Editor UI</title>
+    <!-- Favicon -->
     <link rel="icon" href="https://i.imgur.com/HUhIujV.jpeg" type="image/jpeg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:ital,wght@1,400&display=swap" rel="stylesheet">
+
     <style>
-        /* --- TEMA OSCURO Y VARIABLES DE COLOR --- */
+        /* --- FUENTE Y CONFIGURACIÓN GLOBAL --- */
         :root {
-            --bg-dark: #121212;
-            --bg-light: #1e1e1e; 
-            --bg-controls: #2c2c2c;
-            --border-color: #3a3a3a;
-            --text-primary: #f0f0f0;
-            --text-secondary: #a0a0a0;
-            --accent-blue: #007aff;
-            --accent-blue-hover: #3395ff;
-            --accent-red-hover: #e01717;
-            --shadow-color: rgba(0, 122, 255, 0.15);
+            /* Paleta de colores mejorada (tema oscuro) */
+            --bg-dark: #111317;
+            --bg-light: #1d1f23;
+            --bg-controls: #2c2f35;
+            --border-color: #303338;
+            --text-primary: #e5e7eb;
+            --text-secondary: #88909b;
+            --accent-blue: #0d6efd;
+            --accent-blue-hover: #3a86ff;
+            --accent-red-hover: #e5383b;
         }
 
-        /* --- CONFIGURACIÓN GLOBAL Y RESETEO --- */
+        /* --- Reseteo y Box Sizing --- */
         *, *::before, *::after {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
+        /* --- DISEÑO BASE --- */
         html {
             font-size: 16px;
         }
-
-        /* --- FONDO ANIMADO --- */
-        #background-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: var(--bg-dark);
-        }
-
-        /* --- DISEÑO DEL BODY Y CENTRADO DEL CONTENEDOR --- */
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: transparent; /* El fondo lo maneja el canvas */
+            background-color: var(--bg-dark);
             color: var(--text-primary);
+            margin: 0;
+            padding: 1rem;
             min-height: 100vh;
-            display: flex;
-            align-items: center; /* Centrado vertical */
-            justify-content: center; /* Centrado horizontal */
-            padding: 1.5rem 1rem;
-            overflow-x: hidden;
+            display: grid;
+            /* Centra el contenido en desktop */
+            place-content: center;
+            gap: 1.5rem;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            
+            /* Efecto de fondo animado */
+            background: linear-gradient(-45deg, #111317, #1d1f23, #111317, #2c2f35);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
         }
         
-        /* Ajuste para móviles: Mover el contenedor más arriba */
-        @media (max-height: 700px), (max-width: 480px) {
-            body {
-                align-items: flex-start;
-                padding-top: 5vh;
-            }
+        /* Keyframes para la animación del fondo */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        /* --- CONTENEDOR PRINCIPAL CON ANIMACIÓN --- */
+        /* --- CONTENEDOR PRINCIPAL --- */
         .container {
             background-color: var(--bg-light);
             padding: 1.5rem;
             border-radius: 24px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-color);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 370px; /* Un poco más pequeño */
-            display: flex;
-            flex-direction: column;
+            max-width: 380px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
             gap: 1.25rem;
-            animation: fadeInSlideUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            /* Animación de entrada */
+            animation: fadeInUp 0.6s ease-out forwards;
             opacity: 0;
         }
 
-        @keyframes fadeInSlideUp {
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
@@ -93,6 +91,24 @@
             }
         }
 
+        /* --- AJUSTES PARA MÓVILES --- */
+        @media (max-width: 480px) {
+            body {
+                /* Alinea el contenedor arriba en móviles */
+                place-content: start center;
+                padding: 2rem 1rem; 
+            }
+            .container {
+                /* Hacemos el contenedor un poco más pequeño en móviles */
+                padding: 1.2rem;
+                max-width: 95%;
+            }
+            html {
+                font-size: 15px;
+            }
+        }
+
+
         /* --- ENCABEZADO --- */
         header {
             display: flex;
@@ -102,6 +118,7 @@
         header h1 {
             font-size: 1.5rem;
             font-weight: 700;
+            margin: 0;
             letter-spacing: -0.5px;
         }
         .history-controls {
@@ -110,7 +127,7 @@
         }
 
         /* --- LIENZO (CANVAS) --- */
-        canvas#imageCanvas {
+        canvas {
             width: 100%;
             height: auto;
             aspect-ratio: 1 / 1;
@@ -122,9 +139,9 @@
             background-position: center;
             transition: background-image 0.3s ease-in-out, box-shadow 0.3s ease;
         }
-        canvas#imageCanvas:active { cursor: grabbing; }
-        canvas#imageCanvas:hover {
-            box-shadow: 0 0 15px var(--shadow-color);
+        canvas:active { cursor: grabbing; }
+        canvas:hover {
+             box-shadow: 0 0 15px rgba(13, 110, 253, 0.2);
         }
 
         /* --- PIE DE PÁGINA DE CONTROLES --- */
@@ -156,21 +173,24 @@
             font-weight: normal;
             color: var(--text-primary);
             font-size: 0.85rem;
-            border: 1px solid var(--border-color);
         }
 
         /* --- PANEL DE OPCIONES AVANZADAS --- */
         .advanced-options {
             background-color: rgba(0,0,0,0.2);
             border-radius: 12px;
-            padding: 0 1rem;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-out, padding 0.4s ease-out, border-color 0.4s ease-out;
-            border: 1px solid transparent;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), 
+                        padding 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        border-color 0.4s ease;
+            border: 1px solid transparent;
         }
         .advanced-options.show {
             max-height: 300px;
@@ -182,11 +202,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
             gap: 0.75rem;
         }
         .options-row label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+             color: var(--text-secondary);
+             font-size: 0.9rem;
         }
 
         /* --- BOTONES --- */
@@ -194,110 +215,99 @@
             display: inline-flex; align-items: center; justify-content: center;
             gap: 0.6rem; padding: 0.75rem 1.25rem; border: none;
             border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 600;
-            transition: all 0.25s cubic-bezier(0.1, 0.7, 0.5, 1);
+            transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
             -webkit-tap-highlight-color: transparent;
         }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
         
         .btn-icon {
-            background: transparent; color: var(--text-secondary); padding: 0.5rem;
+            background: transparent; color: var(--text-secondary); padding: 0.5rem; flex-grow: 0;
             border-radius: 10px;
         }
-        .btn-icon:not(:disabled):hover { 
-            color: var(--text-primary); 
-            background-color: var(--bg-controls); 
-            transform: translateY(-2px);
-        }
+        .btn-icon:not(:disabled):hover { color: var(--text-primary); background-color: var(--bg-controls); transform: translateY(-2px); }
         .btn-icon svg { width: 22px; height: 22px; }
         
         .btn-primary { background-color: var(--bg-controls); color: var(--text-primary); border: 1px solid var(--border-color);}
-        .btn-primary:not(:disabled):hover { 
-            background-color: #3c3c3c; 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
+        .btn-primary:not(:disabled):hover { background-color: #3c3c3c; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
-        #download.btn { 
-            background: linear-gradient(45deg, var(--accent-blue), #0056b3); 
-            color: white; 
-            border: none;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
-        }
-        #download.btn:not(:disabled):hover { 
-            transform: translateY(-3px) scale(1.03); 
-            box-shadow: 0 8px 20px var(--shadow-color); 
-        }
+        #download.btn { background-color: var(--accent-blue); color: white; border: none;}
+        #download.btn:not(:disabled):hover { background-color: var(--accent-blue-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3); }
 
         input[type="file"] { display: none; }
-        .main-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .main-actions > .btn, .main-actions > label { flex-grow: 1; }
-        #toggleOptionsBtn { flex-grow: 0; }
+        .main-actions { 
+            display: flex; 
+            gap: 0.75rem; 
+            flex-wrap: wrap; 
+        }
+        
+        .main-actions > .btn-primary, 
+        .main-actions > #download {
+            flex-grow: 1;
+        }
 
         /* --- OTROS CONTROLES --- */
         select {
             appearance: none; padding: 0.6rem 2.2rem 0.6rem 0.8rem; border-radius: 10px;
             border: 1px solid var(--border-color); background-color: var(--bg-controls);
             color: var(--text-primary); font-weight: 500; cursor: pointer; font-size: 0.9rem;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2388909b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.8em;
             flex-grow: 1;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
+            transition: all 0.2s ease;
         }
-        select:hover { border-color: #555; }
+        select:hover { border-color: #555; background-color: #33363b;}
         
         input[type="range"] {
             -webkit-appearance: none; appearance: none; width: 100%; cursor: pointer; background: transparent; height: 28px;
         }
         input[type="range"]:focus { outline: none; }
-        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); transition: background 0.2s; }
-        input[type="range"]::-moz-range-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); transition: background 0.2s;}
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -8px; height: 20px; width: 20px; background: var(--accent-blue); border-radius: 50%; border: 3px solid var(--bg-light); transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        input[type="range"]::-moz-range-thumb { height: 20px; width: 20px; background: var(--accent-blue); border-radius: 50%; border: 3px solid var(--bg-light); transition: transform 0.2s ease, box-shadow 0.2s ease;}
-        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); box-shadow: 0 0 10px var(--shadow-color); }
-        input[type="range"]:active::-moz-range-thumb { transform: scale(1.2); box-shadow: 0 0 10px var(--shadow-color); }
+        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); transition: background-color 0.2s ease;}
+        input[type="range"]::-moz-range-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); transition: background-color 0.2s ease;}
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -7px; height: 18px; width: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--bg-light); transition: transform 0.15s ease-out, background-color 0.2s ease; }
+        input[type="range"]::-moz-range-thumb { height: 18px; width: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--bg-light); transition: transform 0.15s ease-out, background-color 0.2s ease;}
+        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
+        input[type="range"]:active::-moz-range-thumb { transform: scale(1.2); }
+        input[type="range"]:hover::-webkit-slider-thumb { background-color: var(--accent-blue-hover); }
+        input[type="range"]:hover::-moz-range-thumb { background-color: var(--accent-blue-hover); }
         
         .color-input-wrapper { display: flex; align-items: center; gap: 0.5rem; }
-        input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 28px; height: 28px; border: 2px solid var(--border-color); border-radius: 8px; padding: 0; background-color: transparent; cursor: pointer; transition: all 0.2s; }
+        input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 28px; height: 28px; border: 2px solid var(--border-color); border-radius: 8px; padding: 0; background-color: transparent; cursor: pointer; transition: all 0.2s ease;}
         input[type="color"]::-webkit-color-swatch { border-radius: 6px; border: none; }
         input[type="color"]::-moz-color-swatch { border-radius: 6px; border: none; }
         input[type="color"]:hover { border-color: var(--accent-blue); }
-        input[type="color"]:disabled { cursor: not-allowed; opacity: 0.4; }
+        input[type="color"]:disabled { cursor: not-allowed; opacity: 0.4; border-color: var(--border-color); }
         
-        input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: var(--bg-dark); margin: 0; color: currentColor; width: 1.35em; height: 1.35em; border: 2px solid var(--border-color); border-radius: 6px; display: grid; place-content: center; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+        input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: var(--bg-dark); margin: 0; color: currentColor; width: 1.35em; height: 1.35em; border: 2px solid var(--border-color); border-radius: 6px; display: grid; place-content: center; cursor: pointer; transition: all 0.2s; }
         input[type="checkbox"]::before { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em var(--accent-blue); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
-        input[type="checkbox"]:checked { background-color: var(--bg-dark); border-color: var(--accent-blue); }
+        input[type="checkbox"]:checked { background-color: var(--bg-controls); border-color: var(--accent-blue); }
         input[type="checkbox"]:checked::before { transform: scale(1.1); }
 
         /* --- PIE DE PÁGINA DE CRÉDITOS --- */
         .credit-footer {
-            position: absolute; /* Para que no afecte el layout del container */
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
             width: 100%;
             text-align: center;
-            font-size: 12px;
+            font-family: 'Rubik', sans-serif;
+            font-style: italic;
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            animation: fadeInSlideUp 0.6s 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            opacity: 0;
+            padding-bottom: 1rem;
         }
+        .credit-footer p { margin: 0; }
         .credit-footer a {
             color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.3s;
         }
         .credit-footer a:hover {
-            color: var(--text-primary);
+            color: var(--accent-red-hover);
         }
     </style>
 </head>
 <body>
 
-<canvas id="background-canvas"></canvas>
-
 <div class="container">
     <header>
-        <h1>Corner Editor</h1>
+        <h1>Corner Editor UI</h1>
         <div class="history-controls">
             <button id="undoBtn" class="btn btn-icon" title="Deshacer (Ctrl+Z)" disabled>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h8"/><polyline points="12 3 7 8 12 13"/></svg>
@@ -312,7 +322,7 @@
     
     <footer class="controls-footer">
         <div class="control-group">
-            <label for="cornerRadius">Radio de Esquina: <span id="cornerRadiusValue">0%</span></label>
+            <label for="cornerRadius">Corner Aplicado: <span id="cornerRadiusValue">0%</span></label>
             <input type="range" id="cornerRadius" min="0" max="100" value="0">
         </div>
 
@@ -341,7 +351,7 @@
 
         <div class="main-actions">
             <label for="imageLoader" class="btn btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Cargar
             </label>
             <input type="file" id="imageLoader" name="imageLoader" accept="image/*"/>
@@ -365,70 +375,6 @@
 </footer>
 
 <script>
-    // --- ANIMACIÓN DE FONDO DE PARTÍCULAS ---
-    const bgCanvas = document.getElementById('background-canvas');
-    const bgCtx = bgCanvas.getContext('2d');
-    let particles = [];
-    
-    function resizeBgCanvas() {
-        bgCanvas.width = window.innerWidth;
-        bgCanvas.height = window.innerHeight;
-    }
-    
-    class Particle {
-        constructor() {
-            this.x = Math.random() * bgCanvas.width;
-            this.y = Math.random() * bgCanvas.height;
-            this.size = Math.random() * 1.5 + 0.5;
-            this.speedX = Math.random() * 0.4 - 0.2;
-            this.speedY = Math.random() * 0.4 - 0.2;
-            this.opacity = Math.random() * 0.5 + 0.2;
-        }
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-
-            if (this.x > bgCanvas.width || this.x < 0) this.speedX *= -1;
-            if (this.y > bgCanvas.height || this.y < 0) this.speedY *= -1;
-        }
-        draw() {
-            bgCtx.fillStyle = `rgba(200, 200, 200, ${this.opacity})`;
-            bgCtx.beginPath();
-            bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            bgCtx.fill();
-        }
-    }
-
-    function initParticles() {
-        particles = [];
-        let numberOfParticles = (bgCanvas.height * bgCanvas.width) / 9000;
-        if (numberOfParticles > 150) numberOfParticles = 150; // Limitar partículas
-        for (let i = 0; i < numberOfParticles; i++) {
-            particles.push(new Particle());
-        }
-    }
-
-    function animateParticles() {
-        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-        for (const particle of particles) {
-            particle.update();
-            particle.draw();
-        }
-        requestAnimationFrame(animateParticles);
-    }
-    
-    window.addEventListener('resize', () => {
-        resizeBgCanvas();
-        initParticles();
-    });
-
-    resizeBgCanvas();
-    initParticles();
-    animateParticles();
-
-
-    // --- LÓGICA DEL EDITOR DE IMÁGENES (Sin cambios funcionales) ---
-
     // --- SELECCIÓN DE ELEMENTOS DEL DOM ---
     const imageLoader = document.getElementById('imageLoader');
     const canvas = document.getElementById('imageCanvas');
@@ -473,6 +419,7 @@
             canvas.style.backgroundPosition = "0 0, 0 10px, 10px -10px, -10px 0px";
         }
     }
+
 
     // --- LÓGICA DE DIBUJO ---
     function draw() {
@@ -578,6 +525,7 @@
     transparentBgCheckbox.addEventListener('change', (e) => { isTransparent = e.target.checked; bgColorPicker.disabled = isTransparent; draw(); });
     bgColorPicker.addEventListener('input', (e) => { backgroundColor = e.target.value; if (!isTransparent) draw(); });
 
+    // Listeners de mouse para paneo y zoom
     canvas.addEventListener('mousedown', (e) => { isDragging = true; canvas.style.cursor = 'grabbing'; startDrag.x = e.clientX; startDrag.y = e.clientY; });
     canvas.addEventListener('mouseup', (e) => { if (isDragging) { isDragging = false; canvas.style.cursor = 'grab'; if (startDrag.x !== e.clientX || startDrag.y !== e.clientY) saveState(); } });
     canvas.addEventListener('mouseleave', () => { if (isDragging) { isDragging = false; canvas.style.cursor = 'grab'; saveState(); } });
@@ -593,7 +541,8 @@
     });
 
     document.addEventListener('contextmenu', event => event.preventDefault());
-
+    
+    // Listeners táctiles para paneo y pinch-to-zoom
     function getDistance(p1, p2) { return Math.sqrt(Math.pow(p2.clientX - p1.clientX, 2) + Math.pow(p2.clientY - p1.clientY, 2)); }
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -621,26 +570,9 @@
 
     downloadBtn.addEventListener('click', () => {
         if (!image.src) { 
-            // Crear un modal simple en lugar de alert
-            const modal = document.createElement('div');
-            modal.style.position = 'fixed';
-            modal.style.top = '20px';
-            modal.style.left = '50%';
-            modal.style.transform = 'translateX(-50%)';
-            modal.style.padding = '1rem 2rem';
-            modal.style.background = '#ff4d4d';
-            modal.style.color = 'white';
-            modal.style.borderRadius = '8px';
-            modal.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
-            modal.style.zIndex = '1000';
-            modal.innerText = 'Por favor, cargue una imagen primero.';
-            document.body.appendChild(modal);
-            setTimeout(() => {
-                modal.style.transition = 'opacity 0.5s';
-                modal.style.opacity = '0';
-                setTimeout(() => modal.remove(), 500);
-            }, 2500);
-            return;
+            // Usar un modal custom en lugar de alert
+            alert("Por favor, cargue una imagen primero."); 
+            return; 
         }
         const downloadMode = qualitySelector.value; const downloadFormat = formatSelector.value;
         const offscreenCanvas = document.createElement('canvas'); const offscreenCtx = offscreenCanvas.getContext('2d');
