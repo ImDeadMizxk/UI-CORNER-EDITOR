@@ -540,6 +540,19 @@
         draw();
         clearTimeout(zoomTimeout); zoomTimeout = setTimeout(saveState, 500);
     });
+    // Oculta visualmente la barra de scroll pero mantiene la funcionalidad
+    document.documentElement.style.scrollbarWidth = 'none'; // Firefox
+    document.body.style.scrollbarWidth = 'none';
+
+    // Para navegadores basados en WebKit (Chrome, Edge, Safari)
+    const css = `
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    `;
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
 
     document.addEventListener('contextmenu', event => event.preventDefault());
     
