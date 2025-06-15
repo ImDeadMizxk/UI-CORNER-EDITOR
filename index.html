@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corner Editor UI</title>
-  <link rel="icon" href="https://i.imgur.com/HUhIujV.jpeg" type="image/jpeg">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet" />
+    <link rel="icon" href="https://i.imgur.com/HUhIujV.jpeg" type="image/jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet" />
 
     <style>
         /* --- FUENTE Y CONFIGURACIÓN GLOBAL --- */
@@ -92,16 +92,13 @@
             aspect-ratio: 1 / 1;
             border-radius: 16px;
             background-color: #222;
-            background-image:
-                linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
-                linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
-                linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             cursor: grab;
             touch-action: none; 
             border: 1px solid var(--border-color);
+            /* El fondo se gestionará con JS */
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.3s ease-in-out;
         }
         canvas:active { cursor: grabbing; }
 
@@ -278,8 +275,8 @@
     
     <footer class="controls-footer">
         <div class="control-group">
-            <label for="cornerRadius">Esquinas Redondeadas <span id="cornerRadiusValue">0px</span></label>
-            <input type="range" id="cornerRadius" min="0" max="200" value="0">
+            <label for="cornerRadius">Corner Aplicado: <span id="cornerRadiusValue">0%</span></label>
+            <input type="range" id="cornerRadius" min="0" max="100" value="0">
         </div>
 
         <div id="advancedOptions" class="advanced-options">
@@ -355,6 +352,27 @@
     let initialPinchDistance = 0;
     let isTransparent = true, backgroundColor = '#FFFFFF';
     let historyStack = [], historyIndex = -1, zoomTimeout;
+    
+    // --- LÓGICA DE FONDOS ---
+    const placeholderBg = "url('https://i.imgur.com/HUhIujV.jpeg')";
+    const checkerboardBg = `
+        linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+        linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+        linear-gradient(-45deg, transparent 75%, #2a2a2a 75%)`;
+        
+    function setCanvasBackground(isPlaceholder) {
+        if (isPlaceholder) {
+            canvas.style.backgroundImage = placeholderBg;
+            canvas.style.backgroundSize = "cover";
+            canvas.style.backgroundPosition = "center";
+        } else {
+            canvas.style.backgroundImage = checkerboardBg;
+            canvas.style.backgroundSize = "20px 20px";
+            canvas.style.backgroundPosition = "0 0, 0 10px, 10px -10px, -10px 0px";
+        }
+    }
+
 
     // --- LÓGICA DE DIBUJO ---
     function draw() {
@@ -409,13 +427,19 @@
         const size = canvas.clientWidth;
         canvas.width = size;
         canvas.height = size;
-        cornerRadiusSlider.max = size / 2;
+        // El valor del slider es porcentual, el radio real se calcula al dibujar.
+        // Actualizamos el radio al reescalar para mantener la proporción visual.
+        const sliderValue = parseInt(cornerRadiusSlider.value, 10);
+        currentCornerRadius = (sliderValue / 100) * (canvas.width / 2);
         draw();
     }
 
     // --- EVENT LISTENERS ---
     window.addEventListener('resize', () => { clearTimeout(zoomTimeout); zoomTimeout = setTimeout(resizeCanvas, 100); });
-    document.addEventListener('DOMContentLoaded', resizeCanvas);
+    document.addEventListener('DOMContentLoaded', () => {
+        resizeCanvas();
+        setCanvasBackground(true); // Poner imagen de fondo inicial
+    });
 
     // -- NUEVO LISTENER PARA EL PANEL DE OPCIONES --
     toggleOptionsBtn.addEventListener('click', () => {
@@ -433,8 +457,14 @@
                 const imageAspect = image.width / image.height;
                 if (imageAspect > canvasAspect) { scale = canvas.height / image.height; offsetX = (canvas.width - image.width * scale) / 2; offsetY = 0; }
                 else { scale = canvas.width / image.width; offsetY = (canvas.height - image.height * scale) / 2; offsetX = 0; }
-                cornerRadiusSlider.value = 0; currentCornerRadius = 0; cornerRadiusValue.textContent = '0';
+                
+                // Reiniciar slider y valor
+                cornerRadiusSlider.value = 0;
+                cornerRadiusValue.textContent = '0%';
+                currentCornerRadius = 0;
+                
                 historyStack = []; historyIndex = -1; saveState();
+                setCanvasBackground(false); // Cambiar a fondo de tablero
                 draw();
             };
             image.src = event.target.result;
@@ -442,7 +472,15 @@
         if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
     });
 
-    cornerRadiusSlider.addEventListener('input', (e) => { currentCornerRadius = parseInt(e.target.value, 10); cornerRadiusValue.textContent = currentCornerRadius; draw(); });
+    cornerRadiusSlider.addEventListener('input', (e) => {
+        const percentage = parseInt(e.target.value, 10);
+        cornerRadiusValue.textContent = percentage + '%';
+        // Calcular radio en píxeles basado en el porcentaje
+        // El radio máximo (100%) es la mitad del ancho del lienzo para hacer un círculo
+        currentCornerRadius = (percentage / 100) * (canvas.width / 2);
+        draw();
+    });
+
     transparentBgCheckbox.addEventListener('change', (e) => { isTransparent = e.target.checked; bgColorPicker.disabled = isTransparent; draw(); });
     bgColorPicker.addEventListener('input', (e) => { backgroundColor = e.target.value; if (!isTransparent) draw(); });
 
@@ -461,17 +499,17 @@
         clearTimeout(zoomTimeout); zoomTimeout = setTimeout(saveState, 500);
     });
 
-  // Bloquear clic derecho en toda la página
-  document.addEventListener('contextmenu', event => event.preventDefault());
+    // Bloquear clic derecho en toda la página
+    document.addEventListener('contextmenu', event => event.preventDefault());
 
-  // Bloquear arrastrar y clic derecho en todas las imágenes
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('img').forEach(img => {
-      img.setAttribute('draggable', 'false');
-      img.addEventListener('contextmenu', e => e.preventDefault());
-      img.addEventListener('dragstart', e => e.preventDefault());
+    // Bloquear arrastrar y clic derecho en todas las imágenes
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('img').forEach(img => {
+            img.setAttribute('draggable', 'false');
+            img.addEventListener('contextmenu', e => e.preventDefault());
+            img.addEventListener('dragstart', e => e.preventDefault());
+        });
     });
-  });
 
     // Listeners táctiles para paneo y pinch-to-zoom
     function getDistance(p1, p2) { return Math.sqrt(Math.pow(p2.clientX - p1.clientX, 2) + Math.pow(p2.clientY - p1.clientY, 2)); }
