@@ -1,521 +1,534 @@
-
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UI CORNER EDITOR</title>
-  <link rel="icon" href="https://media.tenor.com/ldNjzyrqeIMAAAAe/gato-meme.png">
+    <title>Corner Editor UI</title>
+  <link rel="icon" href="https://i.imgur.com/HUhIujV.jpeg" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet" />
+
     <style>
+        /* --- FUENTE Y CONFIGURACIÓN GLOBAL --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:ital@1&display=swap');
+
+        :root {
+            --bg-dark: #121212;
+            --bg-light: #1e1e1e;
+            --bg-controls: #2c2c2c;
+            --border-color: #3a3a3a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --accent-blue: #007aff;
+            --accent-blue-hover: #3395ff;
+            --accent-red-hover: #e01717;
+        }
+
+        /* --- CORRECCIÓN CLAVE: Universal Box Sizing --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* --- DISEÑO BASE --- */
+        html { 
+            font-size: 16px; 
+        }
+        
+        @media (max-width: 480px) { 
+            html { 
+                font-size: 15px; 
+            } 
+        }
+
+        /* --- CORRECCIÓN CLAVE: Layout principal con Grid para centrado robusto --- */
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #121212 0%, #2c2c2c 100%);
-            color: white;
-            height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             margin: 0;
+            padding: 1rem;
+            min-height: 100vh;
+            display: grid;
+            place-content: center; /* Centra el contenido vertical y horizontalmente */
+            gap: 1.5rem; /* Espacio entre el container y el footer */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        h1 {
-            margin-top: 65px;
-            font-size: 45px;
-            word-wrap: break-word;
-        }
-
-        #container {
-            margin-top: 20px;
-            position: relative;
-        }
-
-        #imageCanvas {
-            border: 1px solid #ccc;
-            margin-top: 7px;
-            cursor: grab;
+        /* --- CONTENEDOR PRINCIPAL CON GRID --- */
+        .container {
+            background-color: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
             width: 100%;
-            max-width: 500px;
+            max-width: 380px;
+            display: grid;
+            grid-template-rows: auto 1fr auto; /* Header, Canvas, Footer */
+            gap: 1.25rem;
+        }
+
+        /* --- ENCABEZADO --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        .history-controls {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        /* --- LIENZO (CANVAS) --- */
+        canvas {
+            width: 100%;
             height: auto;
+            aspect-ratio: 1 / 1;
+            border-radius: 16px;
+            background-color: #222;
+            background-image:
+                linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+                linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+                linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            cursor: grab;
+            touch-action: none; 
+            border: 1px solid var(--border-color);
+        }
+        canvas:active { cursor: grabbing; }
+
+        /* --- PIE DE PÁGINA DE CONTROLES (Dentro del container) --- */
+        footer.controls-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
         }
 
-        input[type="file"] {
-            margin-top: 3px;
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
+        /* --- GRUPO DE CONTROL INDIVIDUAL --- */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        label span {
+            font-family: monospace;
+            background: var(--bg-dark);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: normal;
+            color: var(--text-primary);
+            font-size: 0.85rem;
         }
 
-        input[type="file"]:hover {
-            background-color: #444;
+        /* --- PANEL DE OPCIONES AVANZADAS --- */
+        .advanced-options {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-in-out, padding 0.35s ease-in-out;
+            border: 1px solid transparent;
+        }
+        .advanced-options.show {
+            max-height: 300px;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            border-color: var(--border-color);
+        }
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 0.75rem;
+        }
+        .options-row label {
+             color: var(--text-secondary);
+             font-size: 0.9rem;
         }
 
-        #sliderLabel {
-            margin-top: 20px;
+        /* --- BOTONES --- */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.6rem; padding: 0.75rem 1.25rem; border: none;
+            border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 600;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        
+        .btn-icon {
+            background: transparent; color: var(--text-secondary); padding: 0.5rem; flex-grow: 0;
+            border-radius: 10px;
+        }
+        .btn-icon:not(:disabled):hover { color: var(--text-primary); background-color: var(--bg-controls); }
+        .btn-icon svg { width: 22px; height: 22px; }
+        
+        .btn-primary { background-color: var(--bg-controls); color: var(--text-primary); border: 1px solid var(--border-color);}
+        .btn-primary:not(:disabled):hover { background-color: #3c3c3c; transform: translateY(-2px); }
+        
+        #download.btn { background-color: var(--accent-blue); color: white; border: none;}
+        #download.btn:not(:disabled):hover { background-color: var(--accent-blue-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); }
+
+        input[type="file"] { display: none; }
+        .main-actions { 
+            display: flex; 
+            gap: 0.75rem; 
+            flex-wrap: wrap; 
+        }
+        
+        .main-actions > .btn-primary, 
+        .main-actions > #download {
+            flex-grow: 1;
         }
 
-        button {
-            background-color: #555;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+
+        /* --- OTROS CONTROLES --- */
+        select {
+            appearance: none; padding: 0.6rem 2.2rem 0.6rem 0.8rem; border-radius: 10px;
+            border: 1px solid var(--border-color); background-color: var(--bg-controls);
+            color: var(--text-primary); font-weight: 500; cursor: pointer; font-size: 0.9rem;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.8em;
+            flex-grow: 1;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
         }
-
-        button:hover {
-            background-color: #666;
+        select:hover { border-color: #555; }
+        
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none; width: 100%; cursor: pointer; background: transparent; height: 28px;
         }
+        input[type="range"]:focus { outline: none; }
+        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); }
+        input[type="range"]::-moz-range-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -7px; height: 18px; width: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--bg-light); transition: transform 0.1s ease; }
+        input[type="range"]::-moz-range-thumb { height: 18px; width: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--bg-light); transition: transform 0.1s ease;}
+        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+        input[type="range"]:active::-moz-range-thumb { transform: scale(1.15); }
+        
+        .color-input-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+        input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 28px; height: 28px; border: 2px solid var(--border-color); border-radius: 8px; padding: 0; background-color: transparent; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch { border-radius: 6px; border: none; }
+        input[type="color"]::-moz-color-swatch { border-radius: 6px; border: none; }
+        input[type="color"]:disabled { cursor: not-allowed; opacity: 0.4; }
+        
+        input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: var(--bg-dark); margin: 0; color: currentColor; width: 1.35em; height: 1.35em; border: 2px solid var(--border-color); border-radius: 6px; display: grid; place-content: center; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+        input[type="checkbox"]::before { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em var(--accent-blue); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+        input[type="checkbox"]:checked { background-color: var(--bg-dark); border-color: var(--accent-blue); }
+        input[type="checkbox"]:checked::before { transform: scale(1.1); }
 
-        #downloadBtn {
-            display: none;
-            margin-top: 15px;
-        }
-
-        #formatSelect {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #333;
-            color: white;
-        }
-
-    button#centerBtn {
-        display: block;
-        margin: 5px auto;  /* Centra el botón horizontalmente */
-    }
-
-        #credits {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #aaa;
+        /* --- PIE DE PÁGINA DE CRÉDITOS (Fuera del container) --- */
+        .credit-footer {
+            width: 100%;
+            text-align: center;
+            font-family: 'Rubik', sans-serif;
             font-style: italic;
+            font-size: 12px;
+            color: var(--text-primary);
         }
-
-        #bgColorSelector {
-            margin-top: 20px;
+        .credit-footer p { margin: 0; }
+        .credit-footer a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s;
         }
-
-        #transparentBgLabel {
-            margin-top: 10px;
-        }
-
-        /* Media Queries para pantallas más pequeñas */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 30px;
-            }
-
-            input[type="file"],
-            button,
-            #formatSelect {
-                width: 100%;
-                padding: 12px;
-                font-size: 14px;
-            }
-
-            #sliderLabel,
-            #bgColorSelector,
-            #transparentBgLabel {
-                font-size: 14px;
-            }
-
-            #imageCanvas {
-                max-width: 100%;
-                height: auto;
-            }
-        }
-
-        /* Media Queries para dispositivos muy pequeños */
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 24px;
-            }
-
-            #sliderLabel,
-            #bgColorSelector,
-            #transparentBgLabel,
-            #credits {
-                font-size: 12px;
-            }
-
-            input[type="file"],
-            button,
-            #formatSelect {
-                padding: 8px;
-                font-size: 12px;
-            }
-
-            #downloadBtn {
-                margin-top: 10px;
-            }
+        .credit-footer a:hover {
+            color: var(--accent-red-hover);
         }
     </style>
 </head>
 <body>
 
-    <h1>IMAGE CORNER CONVERTER</h1>
+<div class="container">
+    <header>
+        <h1>Corner Editor UI</h1>
+        <div class="history-controls">
+            <button id="undoBtn" class="btn btn-icon" title="Deshacer (Ctrl+Z)" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h8"/><polyline points="12 3 7 8 12 13"/></svg>
+            </button>
+            <button id="redoBtn" class="btn btn-icon" title="Rehacer (Ctrl+Y)" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13v4a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8"/><polyline points="12 3 17 8 12 13"/></svg>
+            </button>
+        </div>
+    </header>
+    
+    <canvas id="imageCanvas"></canvas>
+    
+    <footer class="controls-footer">
+        <div class="control-group">
+            <label for="cornerRadius">Esquinas Redondeadas <span id="cornerRadiusValue">0px</span></label>
+            <input type="range" id="cornerRadius" min="0" max="200" value="0">
+        </div>
 
-    <!-- Formulario para subir la imagen -->
-    <input type="file" id="imageUpload" accept="image/*">
+        <div id="advancedOptions" class="advanced-options">
+            <div class="options-row">
+                <label for="transparentBg">Fondo</label>
+                <div class="color-input-wrapper">
+                     <label for="transparentBg" style="cursor: pointer; color: var(--text-primary);">Transparente</label>
+                     <input type="checkbox" id="transparentBg" checked>
+                     <input type="color" id="bgColorPicker" value="#FFFFFF" disabled>
+                </div>
+            </div>
+            <div class="options-row">
+                <select id="formatSelector" title="Formato de archivo">
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPG</option>
+                </select>
+                <select id="qualitySelector" title="Calidad de exportación">
+                    <option value="original" selected>Calidad Original</option>
+                    <option value="1">Normal (1x)</option>
+                    <option value="2">Alta (2x)</option>
+                    <option value="4">Excelente (4x)</option>
+                </select>
+            </div>
+        </div>
 
-    <!-- Contenedor para el Canvas -->
-    <div id="container">
-        <canvas id="imageCanvas" width="500" height="500"></canvas>
-    </div>
+        <div class="main-actions">
+            <label for="imageLoader" class="btn btn-primary">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Cargar
+            </label>
+            <input type="file" id="imageLoader" name="imageLoader" accept="image/*"/>
+            
+            <button id="toggleOptionsBtn" class="btn btn-icon" title="Más Opciones">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2.82l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2.82l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            
+            <button id="download" class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar
+            </button>
+        </div>
+    </footer>
+</div>
 
-    <!-- Slider para ajustar el corner -->
-    <div id="sliderLabel">
-        <label for="cornerSlider">Radio del corner: </label>
-        <input type="range" id="cornerSlider" min="0" max="100" value="0">
-        <span id="cornerValue">0</span>
-    </div>
-
-    <!-- Selector de color de fondo con paleta interactiva -->
-    <div id="bgColorSelector">
-        <label for="bgColor">Selecciona el color de fondo: </label>
-        <input type="color" id="bgColor" value="#000000"> <!-- Paleta de color -->
-    </div>
-
-    <!-- Opción para hacer el fondo transparente -->
-    <div id="transparentBgLabel">
-        <label for="transparentBg">Hacer el fondo transparente: </label>
-        <input type="checkbox" id="transparentBg" checked> <!-- Hacerlo transparente por defecto -->
-    </div>
-
-    <!-- Selector de formato -->
-    <div>
-        <label for="formatSelect">Selecciona el formato de descarga: </label>
-        <select id="formatSelect">
-            <option value="image/png">PNG</option>
-            <option value="image/jpeg">JPG</option>
-            <option value="image/webp">WEBP</option>
-            <option value="image/tiff">TIFF</option>
-            <option value="image/gif">GIF</option>
-        </select>
-    </div>
-
-    <!-- Botón para descargar la imagen -->
-    <button id="downloadBtn">Descargar Imagen</button>
-
-<!-- Botón para centrar la imagen -->
-    <button id="centerBtn">Centrar Imagen</button>
-
-
-<footer>
-  <p>
-    <a href="https://imdeadmizxk.github.io/Portafolio/" target="_blank">Made By SilentExe</a>
-  </p>
+<footer class="credit-footer">
+    <p>
+        <a href="https://imdeadmizxk.github.io/Portafolio/" target="_blank">Made By SilentExe</a>
+    </p>
 </footer>
 
-<style>
-  footer {
-    bottom: 0;
-    width: 100%;
-    text-align: center;
-    font-family: 'Rubik', sans-serif;
-    font-style: italic;
-    font-size: 12px;
-    color: #fff;
-    background-color: transparent;
-    padding: 5px 0;
-  }
+<script>
+    // --- SELECCIÓN DE ELEMENTOS DEL DOM ---
+    const imageLoader = document.getElementById('imageLoader');
+    const canvas = document.getElementById('imageCanvas');
+    const context = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('download');
+    const cornerRadiusSlider = document.getElementById('cornerRadius');
+    const cornerRadiusValue = document.getElementById('cornerRadiusValue');
+    const transparentBgCheckbox = document.getElementById('transparentBg');
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const formatSelector = document.getElementById('formatSelector');
+    const qualitySelector = document.getElementById('qualitySelector');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const toggleOptionsBtn = document.getElementById('toggleOptionsBtn');
+    const advancedOptionsPanel = document.getElementById('advancedOptions');
 
-  footer a {
-    color: #fff;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
+    // --- ESTADO DE LA APLICACIÓN ---
+    let image = new Image();
+    let currentCornerRadius = 0, scale = 1, offsetX = 0, offsetY = 0;
+    let isDragging = false, isPinching = false, lastTouchX, lastTouchY;
+    let startDrag = { x: 0, y: 0 };
+    let initialPinchDistance = 0;
+    let isTransparent = true, backgroundColor = '#FFFFFF';
+    let historyStack = [], historyIndex = -1, zoomTimeout;
 
-  footer a:hover {
-    color: #e01717;
-  }
-</style>
+    // --- LÓGICA DE DIBUJO ---
+    function draw() {
+        if (!image.src) return;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.save();
+        if (!isTransparent) {
+            context.fillStyle = backgroundColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        roundedRect(context, 0, 0, canvas.width, canvas.height, currentCornerRadius);
+        context.clip();
+        context.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
+        context.restore();
+    }
+    
+    function roundedRect(ctx, x, y, width, height, radius) {
+        if (width < 2 * radius) radius = width / 2;
+        if (height < 2 * radius) radius = height / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + width, y, x + width, y + height, radius);
+        ctx.arcTo(x + width, y + height, x, y + height, radius);
+        ctx.arcTo(x, y + height, x, y, radius);
+        ctx.arcTo(x, y, x + width, y, radius);
+        ctx.closePath();
+    }
+    
+    // --- MANEJO DEL HISTORIAL (DESHACER/REHACER) ---
+    function updateUndoRedoButtons() {
+        undoBtn.disabled = historyIndex <= 0;
+        redoBtn.disabled = historyIndex >= historyStack.length - 1;
+    }
 
-    <script>
-        const imageUpload = document.getElementById("imageUpload");
-        const imageCanvas = document.getElementById("imageCanvas");
-        const ctx = imageCanvas.getContext("2d");
-        const cornerSlider = document.getElementById("cornerSlider");
-        const cornerValue = document.getElementById("cornerValue");
-        const downloadBtn = document.getElementById("downloadBtn");
-        const formatSelect = document.getElementById("formatSelect");
-        const bgColorSelector = document.getElementById("bgColor");
-        const transparentBgCheckbox = document.getElementById("transparentBg");
+    function saveState() {
+        if (historyIndex < historyStack.length - 1) {
+            historyStack = historyStack.slice(0, historyIndex + 1);
+        }
+        const lastState = historyStack[historyIndex];
+        const currentState = { scale, offsetX, offsetY };
+        if (lastState && lastState.scale === currentState.scale && lastState.offsetX === currentState.offsetX && lastState.offsetY === currentState.offsetY) { return; }
+        historyStack.push(currentState);
+        historyIndex++;
+        updateUndoRedoButtons();
+    }
 
-        let image = new Image();
-        let imgLoaded = false;
-        let originalImageWidth, originalImageHeight;
-        let scale = 1;
-        let offsetX = 0, offsetY = 0;
-        let isDragging = false;
-        let dragStartX, dragStartY;
-        let initialDistance = null;
-        let backgroundColor = "#000000"; // Valor por defecto
+    function undo() { if (historyIndex > 0) { historyIndex--; const state = historyStack[historyIndex]; scale = state.scale; offsetX = state.offsetX; offsetY = state.offsetY; draw(); updateUndoRedoButtons(); } }
+    function redo() { if (historyIndex < historyStack.length - 1) { historyIndex++; const state = historyStack[historyIndex]; scale = state.scale; offsetX = state.offsetX; offsetY = state.offsetY; draw(); updateUndoRedoButtons(); } }
+    
+    // --- MANEJO DEL CANVAS Y RESPONSIVIDAD ---
+    function resizeCanvas() {
+        const size = canvas.clientWidth;
+        canvas.width = size;
+        canvas.height = size;
+        cornerRadiusSlider.max = size / 2;
+        draw();
+    }
 
-        // Cargar la imagen predeterminada al iniciar
-        image.src = 'https://i.pinimg.com/736x/a2/b9/53/a2b9533954fbb0475082a630c8b428f1.jpg';
-        image.onload = function() {
-            imgLoaded = true;
-            originalImageWidth = image.width;
-            originalImageHeight = image.height;
-            drawImage();
-        };
+    // --- EVENT LISTENERS ---
+    window.addEventListener('resize', () => { clearTimeout(zoomTimeout); zoomTimeout = setTimeout(resizeCanvas, 100); });
+    document.addEventListener('DOMContentLoaded', resizeCanvas);
 
-// Función para cargar la imagen cuando el usuario sube una nueva
-imageUpload.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    // -- NUEVO LISTENER PARA EL PANEL DE OPCIONES --
+    toggleOptionsBtn.addEventListener('click', () => {
+        advancedOptionsPanel.classList.toggle('show');
+    });
+
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
+    imageLoader.addEventListener('change', (e) => {
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = (event) => {
+            image.onload = () => {
+                const canvasAspect = canvas.width / canvas.height;
+                const imageAspect = image.width / image.height;
+                if (imageAspect > canvasAspect) { scale = canvas.height / image.height; offsetX = (canvas.width - image.width * scale) / 2; offsetY = 0; }
+                else { scale = canvas.width / image.width; offsetY = (canvas.height - image.height * scale) / 2; offsetX = 0; }
+                cornerRadiusSlider.value = 0; currentCornerRadius = 0; cornerRadiusValue.textContent = '0';
+                historyStack = []; historyIndex = -1; saveState();
+                draw();
+            };
             image.src = event.target.result;
-            image.onload = function() {
-                imgLoaded = true;
-                originalImageWidth = image.width;
-                originalImageHeight = image.height;
-                // Reiniciar la posición y escala
-                offsetX = 0;
-                offsetY = 0;
-                scale = 1;
+        };
+        if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+    });
 
-                // Restablecer el corner slider
-                cornerSlider.value = 0;
-                cornerValue.textContent = "0";
+    cornerRadiusSlider.addEventListener('input', (e) => { currentCornerRadius = parseInt(e.target.value, 10); cornerRadiusValue.textContent = currentCornerRadius; draw(); });
+    transparentBgCheckbox.addEventListener('change', (e) => { isTransparent = e.target.checked; bgColorPicker.disabled = isTransparent; draw(); });
+    bgColorPicker.addEventListener('input', (e) => { backgroundColor = e.target.value; if (!isTransparent) draw(); });
 
-                // Restablecer color de fondo y transparencia
-                bgColorSelector.value = "#000000"; // Restablecer color a negro
-                transparentBgCheckbox.checked = true; // Volver a activar fondo transparente
+    // Listeners de mouse para paneo y zoom
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; canvas.style.cursor = 'grabbing'; startDrag.x = e.clientX; startDrag.y = e.clientY; });
+    canvas.addEventListener('mouseup', (e) => { if (isDragging) { isDragging = false; canvas.style.cursor = 'grab'; if (startDrag.x !== e.clientX || startDrag.y !== e.clientY) saveState(); } });
+    canvas.addEventListener('mouseleave', () => { if (isDragging) { isDragging = false; canvas.style.cursor = 'grab'; saveState(); } });
+    canvas.addEventListener('mousemove', (e) => { if (!isDragging) return; offsetX += e.movementX; offsetY += e.movementY; draw(); });
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect(); const mouseX = e.clientX - rect.left; const mouseY = e.clientY - rect.top;
+        const wheel = e.deltaY < 0 ? 1.1 : 1 / 1.1; const newScale = scale * wheel;
+        if (newScale < 0.02 || newScale > 20) return;
+        offsetX = mouseX - (mouseX - offsetX) * wheel; offsetY = mouseY - (mouseY - offsetY) * wheel; scale = newScale;
+        draw();
+        clearTimeout(zoomTimeout); zoomTimeout = setTimeout(saveState, 500);
+    });
 
-                // Volver a renderizar la imagen sin bordes redondeados
-                drawImage();
+  // Bloquear clic derecho en toda la página
+  document.addEventListener('contextmenu', event => event.preventDefault());
 
-                downloadBtn.style.display = "inline-block";
-            }
+  // Bloquear arrastrar y clic derecho en todas las imágenes
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('img').forEach(img => {
+      img.setAttribute('draggable', 'false');
+      img.addEventListener('contextmenu', e => e.preventDefault());
+      img.addEventListener('dragstart', e => e.preventDefault());
+    });
+  });
+
+    // Listeners táctiles para paneo y pinch-to-zoom
+    function getDistance(p1, p2) { return Math.sqrt(Math.pow(p2.clientX - p1.clientX, 2) + Math.pow(p2.clientY - p1.clientY, 2)); }
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1) { isDragging = true; isPinching = false; lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY; }
+        else if (e.touches.length === 2) { isDragging = false; isPinching = true; initialPinchDistance = getDistance(e.touches[0], e.touches[1]); startDrag.scale = scale; }
+    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (isDragging && e.touches.length === 1) {
+            const deltaX = e.touches[0].clientX - lastTouchX; const deltaY = e.touches[0].clientY - lastTouchY;
+            offsetX += deltaX; offsetY += deltaY;
+            lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
+            draw();
+        } else if (isPinching && e.touches.length === 2) {
+            const currentDistance = getDistance(e.touches[0], e.touches[1]); const zoomFactor = currentDistance / initialPinchDistance; const newScale = startDrag.scale * zoomFactor;
+            if (newScale < 0.02 || newScale > 20) return;
+            const rect = canvas.getBoundingClientRect();
+            const midX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+            const midY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+            offsetX = midX - (midX - offsetX) * (newScale / scale); offsetY = midY - (midY - offsetY) * (newScale / scale); scale = newScale;
+            draw();
         }
-        reader.readAsDataURL(file);
-    }
-});
+    }, { passive: false });
+    canvas.addEventListener('touchend', (e) => { if (isDragging || isPinching) saveState(); isDragging = false; isPinching = false; });
 
-const centerBtn = document.getElementById("centerBtn");
-
-// Función para centrar la imagen en el lienzo
-centerBtn.addEventListener("click", () => {
-    offsetX = 0;
-    offsetY = 0;
-    scale = 1;  // Ajustar el zoom a 1 para que la imagen vuelva a su tamaño original
-    drawImage(); // Redibujar la imagen con la nueva posición centrada
-});
-
-
-        // Función para actualizar el color de fondo
-        bgColorSelector.addEventListener("input", (e) => {
-            if (!transparentBgCheckbox.checked) {
-                backgroundColor = e.target.value;
-                drawImage(); // Redibujar con el nuevo color de fondo
-            }
-        });
-
-
-        // Función para dibujar la imagen, teniendo en cuenta la transparencia
-        function drawImage() {
-            if (!imgLoaded) return;
-
-            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-
-            // Si el fondo es transparente, no dibujar color de fondo
-            if (!transparentBgCheckbox.checked) {
-                ctx.fillStyle = backgroundColor;
-                ctx.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
-            }
-
-            const cornerRadius = (cornerSlider.value / 100) * Math.min(imageCanvas.width, imageCanvas.height) / 2;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(cornerRadius, 0);
-            ctx.arcTo(imageCanvas.width, 0, imageCanvas.width, imageCanvas.height, cornerRadius);
-            ctx.arcTo(imageCanvas.width, imageCanvas.height, 0, imageCanvas.height, cornerRadius);
-            ctx.arcTo(0, imageCanvas.height, 0, 0, cornerRadius);
-            ctx.arcTo(0, 0, imageCanvas.width, 0, cornerRadius);
-            ctx.closePath();
-            ctx.clip();
-
-            // Mantener la imagen sin estirar
-            const imgAspect = image.width / image.height;
-            const canvasAspect = imageCanvas.width / imageCanvas.height;
-
-            let drawWidth, drawHeight;
-
-            if (imgAspect > canvasAspect) {
-                drawWidth = imageCanvas.width;
-                drawHeight = drawWidth / imgAspect;
-            } else {
-                drawHeight = imageCanvas.height;
-                drawWidth = drawHeight * imgAspect;
-            }
-
-            const posX = (imageCanvas.width - drawWidth) / 2;
-            const posY = (imageCanvas.height - drawHeight) / 2;
-
-            ctx.drawImage(image, posX + offsetX, posY + offsetY, drawWidth * scale, drawHeight * scale);
-            ctx.restore();
+    downloadBtn.addEventListener('click', () => {
+        if (!image.src) { alert("Por favor, cargue una imagen primero."); return; }
+        const downloadMode = qualitySelector.value; const downloadFormat = formatSelector.value;
+        const offscreenCanvas = document.createElement('canvas'); const offscreenCtx = offscreenCanvas.getContext('2d');
+        if (downloadMode === 'original') {
+            const finalWidth = Math.round(canvas.width / scale); const finalHeight = Math.round(canvas.height / scale);
+            offscreenCanvas.width = finalWidth; offscreenCanvas.height = finalHeight;
+            if (isTransparent && downloadFormat === 'png') { offscreenCtx.clearRect(0, 0, finalWidth, finalHeight); } else { offscreenCtx.fillStyle = backgroundColor; offscreenCtx.fillRect(0, 0, finalWidth, finalHeight); }
+            offscreenCtx.save();
+            roundedRect(offscreenCtx, 0, 0, finalWidth, finalHeight, currentCornerRadius / scale);
+            offscreenCtx.clip();
+            offscreenCtx.drawImage(image, -offsetX / scale, -offsetY / scale, finalWidth, finalHeight, 0, 0, finalWidth, finalHeight);
+            offscreenCtx.restore();
+        } else {
+            const qualityMultiplier = parseFloat(downloadMode);
+            const finalWidth = canvas.width * qualityMultiplier; const finalHeight = canvas.height * qualityMultiplier;
+            offscreenCanvas.width = finalWidth; offscreenCanvas.height = finalHeight;
+            if (isTransparent && downloadFormat === 'png') { offscreenCtx.clearRect(0, 0, finalWidth, finalHeight); } else { offscreenCtx.fillStyle = backgroundColor; offscreenCtx.fillRect(0, 0, finalWidth, finalHeight); }
+            offscreenCtx.save();
+            roundedRect(offscreenCtx, 0, 0, finalWidth, finalHeight, currentCornerRadius * qualityMultiplier);
+            offscreenCtx.clip();
+            offscreenCtx.drawImage(image, offsetX * qualityMultiplier, offsetY * qualityMultiplier, image.width * scale * qualityMultiplier, image.height * scale * qualityMultiplier);
+            offscreenCtx.restore();
         }
-
-        // Detectar cuando se cambia el estado de transparencia
-        transparentBgCheckbox.addEventListener("change", () => {
-            drawImage(); // Redibujar la imagen con el nuevo estado de transparencia
-        });
-
-        cornerSlider.addEventListener("input", () => {
-            cornerValue.textContent = cornerSlider.value;
-            drawImage();
-        });
-
-        // Zoom en la imagen con la rueda del mouse
-        imageCanvas.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            const zoomSpeed = 0.1;
-            if (e.deltaY < 0) {
-                scale += zoomSpeed;
-            } else {
-                scale = Math.max(0.1, scale - zoomSpeed);
-            }
-            drawImage();
-        });
-
-        // Mover la imagen con el mouse
-        imageCanvas.addEventListener("mousedown", (e) => {
-            isDragging = true;
-            dragStartX = e.offsetX - offsetX;
-            dragStartY = e.offsetY - offsetY;
-            imageCanvas.style.cursor = "grabbing";
-        });
-
-        imageCanvas.addEventListener("mousemove", (e) => {
-            if (isDragging) {
-                offsetX = e.offsetX - dragStartX;
-                offsetY = e.offsetY - dragStartY;
-                drawImage();
-            }
-        });
-
-        imageCanvas.addEventListener("mouseup", () => {
-            isDragging = false;
-            imageCanvas.style.cursor = "grab";
-        });
-
-        imageCanvas.addEventListener("mouseleave", () => {
-            isDragging = false;
-            imageCanvas.style.cursor = "grab";
-        });
-
-        // Soporte para gestos táctiles
-        imageCanvas.addEventListener("touchstart", (e) => {
-            e.preventDefault();  // Prevenir desplazamiento mientras se interactúa
-            if (e.touches.length === 1) {
-                isDragging = true;
-                dragStartX = e.touches[0].clientX - offsetX;
-                dragStartY = e.touches[0].clientY - offsetY;
-            } else if (e.touches.length === 2) {
-                initialDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-            }
-        });
-
-        imageCanvas.addEventListener("touchmove", (e) => {
-            e.preventDefault();  // Prevenir desplazamiento mientras se interactúa
-            if (e.touches.length === 1 && isDragging) {
-                offsetX = e.touches[0].clientX - dragStartX;
-                offsetY = e.touches[0].clientY - dragStartY;
-                drawImage();
-            } else if (e.touches.length === 2 && initialDistance) {
-                const newDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                scale *= newDistance / initialDistance;
-                initialDistance = newDistance;
-                drawImage();
-            }
-        });
-
-        imageCanvas.addEventListener("touchend", (e) => {
-            if (e.touches.length < 2) {
-                initialDistance = null;
-            }
-            if (e.touches.length === 0) {
-                isDragging = false;
-            }
-        });
-
-downloadBtn.addEventListener("click", () => {
-    // Recalcular el cornerRadius en función del tamaño del canvas de descarga (2048x2048)
-    const downloadCanvas = document.createElement("canvas");
-    const downloadCtx = downloadCanvas.getContext("2d");
-
-    // Configurar el canvas de descarga a 2048x2048
-    downloadCanvas.width = 2048;
-    downloadCanvas.height = 2048;
-
-    // Si la opción de fondo transparente está seleccionada, no dibujar el fondo
-    if (!transparentBgCheckbox.checked) {
-        // Establecer el color de fondo en el canvas de descarga si no es transparente
-        downloadCtx.fillStyle = backgroundColor; // Usar el color de fondo seleccionado
-        downloadCtx.fillRect(0, 0, downloadCanvas.width, downloadCanvas.height);
-    }
-
-    // Recalcular el cornerRadius basándose en el nuevo tamaño
-    const cornerRadius = (cornerSlider.value / 100) * Math.min(downloadCanvas.width, downloadCanvas.height) / 2;
-
-    downloadCtx.beginPath();
-    downloadCtx.moveTo(cornerRadius, 0);
-    downloadCtx.arcTo(downloadCanvas.width, 0, downloadCanvas.width, downloadCanvas.height, cornerRadius);
-    downloadCtx.arcTo(downloadCanvas.width, downloadCanvas.height, 0, downloadCanvas.height, cornerRadius);
-    downloadCtx.arcTo(0, downloadCanvas.height, 0, 0, cornerRadius);
-    downloadCtx.arcTo(0, 0, downloadCanvas.width, 0, cornerRadius);
-    downloadCtx.closePath();
-    downloadCtx.clip();
-
-    // Ajustar la imagen para que se mantenga en proporción
-    const imgAspect = image.width / image.height;
-    const canvasAspect = imageCanvas.width / imageCanvas.height;
-
-    let drawWidth, drawHeight;
-
-    if (imgAspect > canvasAspect) {
-        // Imagen más ancha que el canvas
-        drawWidth = imageCanvas.width;
-        drawHeight = drawWidth / imgAspect;
-    } else {
-        // Imagen más alta que el canvas
-        drawHeight = imageCanvas.height;
-        drawWidth = drawHeight * imgAspect;
-    }
-
-    // Centramos la imagen en el canvas de descarga, teniendo en cuenta el desplazamiento y el zoom
-    const posX = (imageCanvas.width - drawWidth) / 2;
-    const posY = (imageCanvas.height - drawHeight) / 2;
-
-    // Escalar para el canvas de descarga (2048x2048)
-    const downloadScaleX = downloadCanvas.width / imageCanvas.width;
-    const downloadScaleY = downloadCanvas.height / imageCanvas.height;
-
-    // Dibujar la imagen en el canvas de descarga
-    downloadCtx.drawImage(image, (posX + offsetX) * downloadScaleX, (posY + offsetY) * downloadScaleY, drawWidth * scale * downloadScaleX, drawHeight * scale * downloadScaleY);
-
-    // Generar la URL de descarga
-    const dataURL = downloadCanvas.toDataURL(formatSelect.value);
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = "image_cornered";
-    link.click();
-});
-
-    </script>
+        const link = document.createElement('a');
+        link.download = `imagen-editada-${Date.now()}.${downloadFormat}`;
+        if (downloadFormat === 'jpg') { link.href = offscreenCanvas.toDataURL('image/jpeg', 1.0); } else { link.href = offscreenCanvas.toDataURL('image/png'); }
+        link.click();
+    });
+</script>
 
 </body>
 </html>
