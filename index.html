@@ -517,32 +517,36 @@
 
     // --- DOWNLOAD LOGIC ---
     downloadBtn.addEventListener('click', () => {
-        if (!image.src || image.src.startsWith('https')) { alert("Por favor, cargue una imagen primero."); return; }
-        const downloadMode = qualitySelector.value;
-        const downloadFormat = formatSelector.value;
+        if (!image.src) { 
+            // Usar un modal custom en lugar de alert
+            alert("Por favor, cargue una imagen primero."); 
+            return; 
+        }
+        const downloadMode = qualitySelector.value; const downloadFormat = formatSelector.value;
         const offscreenCanvas = document.createElement('canvas'); const offscreenCtx = offscreenCanvas.getContext('2d');
         if (downloadMode === 'original') {
             const finalWidth = Math.round(canvas.width / scale); const finalHeight = Math.round(canvas.height / scale);
             offscreenCanvas.width = finalWidth; offscreenCanvas.height = finalHeight;
-            if (!isTransparent || downloadFormat === 'jpeg') { offscreenCtx.fillStyle = backgroundColor; offscreenCtx.fillRect(0, 0, finalWidth, finalHeight); }
+            if (isTransparent && downloadFormat === 'png') { offscreenCtx.clearRect(0, 0, finalWidth, finalHeight); } else { offscreenCtx.fillStyle = backgroundColor; offscreenCtx.fillRect(0, 0, finalWidth, finalHeight); }
             offscreenCtx.save();
             roundedRect(offscreenCtx, 0, 0, finalWidth, finalHeight, currentCornerRadius / scale);
             offscreenCtx.clip();
-            offscreenCtx.drawImage(image, -offsetX / scale, -offsetY / scale, image.width, image.height);
+            offscreenCtx.drawImage(image, -offsetX / scale, -offsetY / scale, finalWidth, finalHeight, 0, 0, finalWidth, finalHeight);
+            offscreenCtx.restore();
         } else {
             const qualityMultiplier = parseFloat(downloadMode);
             const finalWidth = canvas.width * qualityMultiplier; const finalHeight = canvas.height * qualityMultiplier;
             offscreenCanvas.width = finalWidth; offscreenCanvas.height = finalHeight;
-            if (!isTransparent || downloadFormat === 'jpeg') { offscreenCtx.fillStyle = backgroundColor; offscreenCtx.fillRect(0, 0, finalWidth, finalHeight); }
+            if (isTransparent && downloadFormat === 'png') { offscreenCtx.clearRect(0, 0, finalWidth, finalHeight); } else { offscreenCtx.fillStyle = backgroundColor; offscreenCtx.fillRect(0, 0, finalWidth, finalHeight); }
             offscreenCtx.save();
             roundedRect(offscreenCtx, 0, 0, finalWidth, finalHeight, currentCornerRadius * qualityMultiplier);
             offscreenCtx.clip();
             offscreenCtx.drawImage(image, offsetX * qualityMultiplier, offsetY * qualityMultiplier, image.width * scale * qualityMultiplier, image.height * scale * qualityMultiplier);
+            offscreenCtx.restore();
         }
         const link = document.createElement('a');
-        const filename = suggestedFilename.value.trim() || `imagen-editada-${Date.now()}`;
-        link.download = `${filename}.${downloadFormat}`;
-        link.href = offscreenCanvas.toDataURL(`image/${downloadFormat}`, 1.0);
+        link.download = `imagen-editada-${Date.now()}.${downloadFormat}`;
+        if (downloadFormat === 'jpg') { link.href = offscreenCanvas.toDataURL('image/jpeg', 1.0); } else { link.href = offscreenCanvas.toDataURL('image/png'); }
         link.click();
     });
 </script>
