@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corner Editor UI</title>
+    <title>Corner Editor UI Pro</title>
     <!-- Favicon -->
     <link rel="icon" href="https://i.imgur.com/HUhIujV.jpeg" type="image/jpeg">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:ital,wght@1,400&display=swap" rel="stylesheet">
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         /* --- FUENTE Y CONFIGURACIÓN GLOBAL --- */
@@ -18,7 +20,7 @@
             --bg-dark: #111317;
             --bg-light: #1d1f23;
             --bg-controls: #2c2f35;
-            --border-color: #303338;
+            --border-color: rgba(255, 255, 255, 0.1); /* Borde más sutil para glassmorphism */
             --text-primary: #e5e7eb;
             --text-secondary: #88909b;
             --accent-blue: #0d6efd;
@@ -34,8 +36,14 @@
         /* --- DISEÑO BASE --- */
         html {
             font-size: 16px;
+            scrollbar-width: none; /* Oculta scrollbar en Firefox */
         }
         
+        /* Oculta scrollbar en Webkit (Chrome, Safari) */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-dark);
@@ -44,28 +52,27 @@
             padding: 1rem;
             min-height: 100vh;
             display: grid;
-            /* Centra el contenido en desktop */
             place-content: center;
             gap: 1.5rem;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            
-            /* Efecto de fondo animado */
-            background: linear-gradient(-45deg, #111317, #1d1f23, #111317, #2c2f35);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            /* Se elimina 'overflow: hidden' para permitir el scroll si es necesario */
         }
         
-        /* Keyframes para la animación del fondo */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Detrás de todo el contenido */
         }
 
-        /* --- CONTENEDOR PRINCIPAL --- */
+        /* --- CONTENEDOR PRINCIPAL (Glassmorphism) --- */
         .container {
-            background-color: var(--bg-light);
+            background-color: rgba(29, 31, 35, 0.75); /* Fondo semitransparente */
+            backdrop-filter: blur(10px) saturate(180%); /* Efecto de desenfoque */
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             padding: 1.5rem;
             border-radius: 24px;
             border: 1px solid var(--border-color);
@@ -78,6 +85,7 @@
             /* Animación de entrada */
             animation: fadeInUp 0.6s ease-out forwards;
             opacity: 0;
+            z-index: 1; /* Asegura que esté sobre el fondo de partículas */
         }
 
         @keyframes fadeInUp {
@@ -94,7 +102,6 @@
         /* --- AJUSTES PARA MÓVILES (INCLUYE FIX DE CENTRADO) --- */
         @media (max-width: 480px) {
             body {
-                /* Usamos flexbox para asegurar un centrado perfecto en móviles */
                 display: flex;
                 flex-direction: column;
                 justify-content: center; /* Centrado vertical */
@@ -108,7 +115,6 @@
             }
             html { font-size: 15px; }
         }
-
 
         /* --- ENCABEZADO --- */
         header {
@@ -128,20 +134,22 @@
         }
 
         /* --- LIENZO (CANVAS) --- */
-        canvas {
+        canvas#imageCanvas { /* Selector más específico */
             width: 100%;
             height: auto;
             aspect-ratio: 1 / 1;
             border-radius: 16px;
             cursor: grab;
             touch-action: none;
-            border: 1px solid var(--border-color);
+            border: 0px solid var(--border-color);
             background-size: cover;
             background-position: center;
             transition: background-image 0.3s ease-in-out, box-shadow 0.3s ease;
+            position: relative; /* z-index necesita position */
+            z-index: 2; /* Para que esté sobre el fondo de partículas */
         }
-        canvas:active { cursor: grabbing; }
-        canvas:hover {
+        canvas#imageCanvas:active { cursor: grabbing; }
+        canvas#imageCanvas:hover {
              box-shadow: 0 0 15px rgba(13, 110, 253, 0.2);
         }
 
@@ -168,7 +176,7 @@
         }
         label span {
             font-family: monospace;
-            background: var(--bg-dark);
+            background: rgba(0,0,0,0.3); /* Adaptado para glassmorphism */
             padding: 4px 8px;
             border-radius: 6px;
             font-weight: normal;
@@ -225,7 +233,7 @@
             background: transparent; color: var(--text-secondary); padding: 0.5rem; flex-grow: 0;
             border-radius: 10px;
         }
-        .btn-icon:not(:disabled):hover { color: var(--text-primary); background-color: var(--bg-controls); transform: translateY(-2px); }
+        .btn-icon:not(:disabled):hover { color: var(--text-primary); background-color: rgba(44, 47, 53, 0.8); transform: translateY(-2px); }
         .btn-icon svg { width: 22px; height: 22px; }
         
         .btn-primary { background-color: var(--bg-controls); color: var(--text-primary); border: 1px solid var(--border-color);}
@@ -262,8 +270,8 @@
             -webkit-appearance: none; appearance: none; width: 100%; cursor: pointer; background: transparent; height: 28px;
         }
         input[type="range"]:focus { outline: none; }
-        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); transition: background-color 0.2s ease;}
-        input[type="range"]::-moz-range-track { height: 6px; background: var(--bg-dark); border-radius: 3px; border: 1px solid var(--border-color); transition: background-color 0.2s ease;}
+        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; border: 1px solid var(--border-color); transition: background-color 0.2s ease;}
+        input[type="range"]::-moz-range-track { height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; border: 1px solid var(--border-color); transition: background-color 0.2s ease;}
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -7px; height: 18px; width: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--bg-light); transition: transform 0.15s ease-out, background-color 0.2s ease; }
         input[type="range"]::-moz-range-thumb { height: 18px; width: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--bg-light); transition: transform 0.15s ease-out, background-color 0.2s ease;}
         input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
@@ -278,7 +286,7 @@
         input[type="color"]:hover { border-color: var(--accent-blue); }
         input[type="color"]:disabled { cursor: not-allowed; opacity: 0.4; border-color: var(--border-color); }
         
-        input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: var(--bg-dark); margin: 0; color: currentColor; width: 1.35em; height: 1.35em; border: 2px solid var(--border-color); border-radius: 6px; display: grid; place-content: center; cursor: pointer; transition: all 0.2s; }
+        input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: rgba(0,0,0,0.3); margin: 0; color: currentColor; width: 1.35em; height: 1.35em; border: 2px solid var(--border-color); border-radius: 6px; display: grid; place-content: center; cursor: pointer; transition: all 0.2s; }
         input[type="checkbox"]::before { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em var(--accent-blue); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
         input[type="checkbox"]:checked { background-color: var(--bg-controls); border-color: var(--accent-blue); }
         input[type="checkbox"]:checked::before { transform: scale(1.1); }
@@ -292,6 +300,8 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             padding-bottom: 1rem;
+            position: relative; /* z-index necesita position */
+            z-index: 1;
         }
         .credit-footer p { margin: 0; }
         .credit-footer a {
@@ -305,6 +315,9 @@
     </style>
 </head>
 <body>
+
+<!-- Contenedor para la animación de three.js -->
+<div id="particles-js"></div>
 
 <div class="container">
     <header>
@@ -376,7 +389,87 @@
 </footer>
 
 <script>
-    // --- SELECCIÓN DE ELEMENTOS DEL DOM ---
+    // --- SCRIPT DE PARTÍCULAS THREE.JS ---
+    let scene, camera, renderer, particles;
+    
+    function initParticles() {
+        const container = document.getElementById('particles-js');
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+        
+        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+        
+        const particleCount = 5000;
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        
+        const color = new THREE.Color();
+        
+        for (let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            positions[i3] = (Math.random() - 0.5) * 200;
+            positions[i3 + 1] = (Math.random() - 0.5) * 200;
+            positions[i3 + 2] = (Math.random() - 0.5) * 200;
+            
+            // Colores entre azul y púrpura
+            color.setHSL(Math.random() * 0.2 + 0.6, 0.7, 0.6);
+            colors[i3] = color.r;
+            colors[i3 + 1] = color.g;
+            colors[i3 + 2] = color.b;
+        }
+        
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        
+        const material = new THREE.PointsMaterial({
+            size: 0.2,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 0.8,
+            depthWrite: false, // Importante para efectos de transparencia
+        });
+        
+        particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+        
+        animateParticles();
+    }
+    
+    function animateParticles() {
+        requestAnimationFrame(animateParticles);
+        
+        const time = Date.now() * 0.0001;
+        
+        // Rotación sutil y constante
+        particles.rotation.x = time * 0.2;
+        particles.rotation.y = time * 0.15;
+        
+        // Se eliminó el efecto parallax con el mouse para que se mueva solo
+        camera.lookAt(scene.position);
+        
+        renderer.render(scene, camera);
+    }
+    
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    }
+
+    // No es necesario un event listener separado, se unificará más abajo
+    // window.addEventListener('resize', onWindowResize, false);
+    
+    initParticles();
+
+
+    // --- SCRIPT DEL EDITOR DE IMÁGENES ---
     const imageLoader = document.getElementById('imageLoader');
     const canvas = document.getElementById('imageCanvas');
     const context = canvas.getContext('2d');
@@ -473,15 +566,16 @@
     // --- MANEJO DEL CANVAS Y RESPONSIVIDAD ---
     function resizeCanvas() {
         const size = canvas.clientWidth;
-        canvas.width = size;
-        canvas.height = size;
-        const sliderValue = parseInt(cornerRadiusSlider.value, 10);
-        currentCornerRadius = (sliderValue / 100) * (canvas.width / 2);
-        draw();
+        if (size > 0) {
+            canvas.width = size;
+            canvas.height = size;
+            const sliderValue = parseInt(cornerRadiusSlider.value, 10);
+            currentCornerRadius = (sliderValue / 100) * (canvas.width / 2);
+            draw();
+        }
     }
 
     // --- EVENT LISTENERS ---
-    window.addEventListener('resize', () => { clearTimeout(zoomTimeout); zoomTimeout = setTimeout(resizeCanvas, 100); });
     document.addEventListener('DOMContentLoaded', () => {
         resizeCanvas();
         setCanvasBackground(true);
@@ -540,20 +634,7 @@
         draw();
         clearTimeout(zoomTimeout); zoomTimeout = setTimeout(saveState, 500);
     });
-    // Oculta visualmente la barra de scroll pero mantiene la funcionalidad
-    document.documentElement.style.scrollbarWidth = 'none'; // Firefox
-    document.body.style.scrollbarWidth = 'none';
-
-    // Para navegadores basados en WebKit (Chrome, Edge, Safari)
-    const css = `
-        ::-webkit-scrollbar {
-            display: none;
-        }
-    `;
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.head.appendChild(style);
-
+    
     document.addEventListener('contextmenu', event => event.preventDefault());
     
     // Listeners táctiles para paneo y pinch-to-zoom
@@ -584,7 +665,7 @@
 
     downloadBtn.addEventListener('click', () => {
         if (!image.src) { 
-            // Usar un modal custom en lugar de alert
+            // Implementar un modal personalizado es preferible a alert()
             alert("Por favor, cargue una imagen primero."); 
             return; 
         }
@@ -615,7 +696,18 @@
         if (downloadFormat === 'jpg') { link.href = offscreenCanvas.toDataURL('image/jpeg', 1.0); } else { link.href = offscreenCanvas.toDataURL('image/png'); }
         link.click();
     });
+
+    // Unificar el listener de resize para ambos scripts
+    window.addEventListener('resize', () => {
+        // Redimensionar canvas de partículas
+        onWindowResize(); 
+        // Redimensionar canvas de la imagen (con debounce)
+        clearTimeout(zoomTimeout); 
+        zoomTimeout = setTimeout(resizeCanvas, 100); 
+    });
+
 </script>
 
 </body>
 </html>
+
